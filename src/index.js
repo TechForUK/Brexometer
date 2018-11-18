@@ -5,9 +5,10 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 import { Provider } from 'mobx-react';
 import { observable } from 'mobx';
 import axios from 'axios';
-import DevTools, { setLogEnabled } from 'mobx-react-devtools';
-import createHistory from 'history/createBrowserHistory'
+import createBrowserHistory from 'history/createBrowserHistory';
 import createMemoryHistory from 'history/createMemoryHistory'
+import { RouterStore, syncHistoryWithStore } from 'mobx-react-router';
+import { Router } from 'react-router';
 
 /* STORES */
 import UserStore from './Stores/UserStore.js';
@@ -45,10 +46,12 @@ if (location.host === 'open.represent.me') { // Test server override defaults
   });
 }else {
   window.API = axios.create({
-    baseURL: 'http://localhost:8000'
-    //baseURL: 'http://api.represent.me'
+    // baseURL: 'http://localhost:8000'
+    baseURL: 'http://api.represent.me'
   });
 }
+
+const routing = new RouterStore();
 
 window.stores = {
   UserStore:              new UserStore(),
@@ -57,18 +60,21 @@ window.stores = {
   DemographicsDataStore:  new DemographicsDataStore(),
   CensusDataStore:        new CensusDataStore(),
   AppStatisticsStore:     new AppStatisticsStore(),
-}
+  routing,
+};
+
 
 window.REPRESENT = (element, initialPath = "/", virtualLocation = true) => {
 
-  let history;
+  var history;
 
   if(virtualLocation) {
     history = createMemoryHistory({
       initialEntries: [ initialPath ],
     });
   }else {
-    history = createHistory();
+      history = syncHistoryWithStore(createBrowserHistory(), routing);
+
       history.listen((location, action) => {
         //console.log('location, action', location, action)
         ReactGA.set({ page: location.pathname });
@@ -86,7 +92,8 @@ window.REPRESENT = (element, initialPath = "/", virtualLocation = true) => {
         DemographicsDataStore={window.stores.DemographicsDataStore}
         CensusDataStore={window.stores.CensusDataStore}
         AppStatisticsStore={window.stores.AppStatisticsStore}
-        >
+        routing={window.stores.routing}
+      >
         <Shell history={history}/>
       </Provider>
     </div>,

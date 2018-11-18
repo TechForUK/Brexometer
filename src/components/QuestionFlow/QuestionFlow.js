@@ -27,7 +27,9 @@ const monthNames = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
 
-@inject("CollectionStore", "QuestionStore", "UserStore") @observer class QuestionFlow extends Component {
+@inject("CollectionStore", "QuestionStore", "UserStore", "routing")
+@observer
+class QuestionFlow extends Component {
 
   constructor() {
     super()
@@ -39,7 +41,8 @@ const monthNames = ["January", "February", "March", "April", "May", "June",
   }
 
   componentWillMount() {
-    let { CollectionStore, match } = this.props
+    let { CollectionStore, match, routing } = this.props
+
     CollectionStore.getCollectionById(parseInt(match.params.collectionId))
       .then((collection) => {
         this.setState({collection})
@@ -64,12 +67,12 @@ const monthNames = ["January", "February", "March", "April", "May", "June",
 
   render() {
 
-    let { history, UserStore, CollectionStore, QuestionStore, match } = this.props;
+    let { history, UserStore, CollectionStore, QuestionStore, match, routing } = this.props;
     let { collection, collectionItems, networkError } = this.state;
 
     if(networkError) {
       return <ErrorReload message="We couldn't load this collection!"/>
-    }else if(!collection || collectionItems === null) {
+    }else if(!collection || !collectionItems || !collectionItems.length) {
       return <LoadingIndicator/>
     }
 
@@ -100,26 +103,14 @@ const monthNames = ["January", "February", "March", "April", "May", "June",
             transitionLeaveTimeout={1000}>
 
             {item.type === "Q" && // If rendering a question
-
-              <RenderedQuestion order={ orderNumber } key={ orderNumber } question={ QuestionStore.questions.get(item.object_id) } onUpdate={(i) => {
-
-                let question = QuestionStore.questions.get(item.object_id);
-
-                if(!UserStore.userData.has("id")) { history.push('/login/' + this.dynamicConfig.getNextConfigWithRedirect(this.props.history.location.pathname)); return } // User must log in
-
-                if(question.subtype === 'likert') {
-                  QuestionStore.voteQuestionLikert(item.object_id, i, collectionId);
-                }else if(question.subtype === 'mcq') {
-                  QuestionStore.voteQuestionMCQ(item.object_id, i, collectionId);
-                }
-
-                if( orderNumber < collectionItems.length - 1 ) { // If there is a next question
-                  this.navigateToNextItem()
-                }else {
-                  this.navigateToEnd()
-                }
-              }} />
-
+              <RenderedQuestion
+                order={ orderNumber }
+                key={ orderNumber }
+                question={ QuestionStore.questions.get(item.object_id) }
+                onUpdate={(choiceId) => {
+                  routing.push(`/survey/${this.props.match.params.collectionId}/flow/${orderNumber}/answer/${choiceId}/${this.dynamicConfig.encodeConfig()}`)
+                }}
+              />
             }
 
             {item.type === "B" && // If rendering a break

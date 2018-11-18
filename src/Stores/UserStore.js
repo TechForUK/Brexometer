@@ -27,7 +27,9 @@ class UserStore {
     if (Cookies.enabled) { // Check if browser allows cookies and if so attempt auto-login
       let authToken = Cookies.get('representAuthToken'); // Check if cookie exists with authToken
       this.sessionData.set("authToken", authToken);
-      this.getMe();
+      this.getMe().catch((error) => {
+        console.log("Not logged in");
+      });
     }
 
     window.API.interceptors.response.use(function (response) { // On successful response
@@ -40,11 +42,14 @@ class UserStore {
         return Promise.reject(error);
       }.bind(this));
 
+    this.logout = this.logout.bind(this);
+    this.onAuthLoginSuccess = this.onAuthLoginSuccess.bind(this);
   }
 
   getMe() {
     return new Promise((resolve, reject) => {
       if(!this.sessionData.get("authToken")) {
+        console.log("No auth token");
         reject("No auth token");
       }
 
@@ -90,11 +95,13 @@ class UserStore {
 
   authLogin(username, password) {
     return window.API.post('/auth/login/', { username, password })
-      .then(function (response) {
-        if(response.data.auth_token) {
-          this.setupAuthToken(response.data.auth_token);
-        }
-      }.bind(this));
+      .then(this.onAuthLoginSuccess);
+  }
+
+  onAuthLoginSuccess(response) {
+    if(response.data.auth_token) {
+      this.setupAuthToken(response.data.auth_token);
+    }
   }
 
   toggleUserDialog() {
@@ -129,13 +136,12 @@ class UserStore {
   logout() {
     Cookies.expire("representAuthToken");
     this.sessionData.set("authToken", "");
-    this.userData.replace({});
+    this.userData.clear();
     this.sessionData.set("showUserDialogue", false);
-    location.reload();
   }
 
   isLoggedIn() {
-    return this.userData.has("id");
+    return this.userData.get('id');
   }
 
   compareUsers(userAId, userBId) {

@@ -10,7 +10,9 @@ import DynamicConfigService from '../../services/DynamicConfigService';
 import ErrorReload from '../ErrorReload';
 
 
-@inject("UserStore", "CollectionStore") @observer class CollectionIntro extends Component {
+@inject("UserStore", "CollectionStore", "routing")
+@observer
+class CollectionIntro extends Component {
 
   constructor() {
     super();
@@ -38,7 +40,6 @@ import ErrorReload from '../ErrorReload';
   }
 
   render() {
-
     let collectionId = parseInt(this.props.match.params.collectionId);
     let { collection, networkError } = this.state;
 
@@ -97,7 +98,11 @@ import ErrorReload from '../ErrorReload';
               <h1>{ collection.name }</h1>
               <ReactMarkdown source={ collection.desc } renderers={{Link: props => <a href={props.href} target="_blank">{props.children}</a>}} />
 
-                <Link to={ "/survey/" + collection.id + "/flow/0/" + this.dynamicConfig.encodeConfig() }><RaisedButton label="Start" primary /></Link>
+                <Link
+                  to={ "/survey/" + collection.id + "/flow/0/" + this.dynamicConfig.encodeConfig() }
+                >
+                  <RaisedButton label="Start" primary />
+                </Link>
                 {this.props.UserStore.userData.has("id") && this.props.CollectionStore.collections.get(collectionId).user.id === this.props.UserStore.userData.get("id") && <Link to={ "/survey/" + collectionId + "/edit" }><RaisedButton label="Edit" primary /></Link>}
               </div>
             </div>

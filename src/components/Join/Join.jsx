@@ -25,7 +25,10 @@ const styles = {
   }
 }
 
-@inject("UserStore") @observer export default class Join extends Component {
+@inject("UserStore")
+@inject("routing")
+@observer
+export default class Join extends Component {
 
   constructor() {
     super();
@@ -53,6 +56,7 @@ const styles = {
   }
 
   render() {
+    const { history, push, goBack } = this.props.routing;
 
     return (
       <div style={{height: '100%'}}>
@@ -60,7 +64,7 @@ const styles = {
 
           <h1 style={{marginBottom: 0}}>Join Represent</h1>
 
-          {this.dynamicConfig.getNextRedirect() && <a onClick={() => this.props.history.push(this.dynamicConfig.getNextRedirect())}>&larr; {"back"}</a>}
+          {history.length > 1 && <a onClick={goBack}>&larr; {"back"}</a>}
 
           <TextField
             floatingLabelText="Email address"

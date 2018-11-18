@@ -23,6 +23,7 @@ import EditCollection from '../EditCollection';
 import QuestionFlow from '../QuestionFlow';
 import CreateCollection from '../CreateCollection';
 import Login from '../Login';
+import Logout from '../Logout';
 import Register from '../Register';
 import JoinGroup from '../JoinGroup';
 import Join from '../Join';
@@ -34,9 +35,12 @@ import QuestionLiquidDisplay from '../charts/QuestionLiquidPiechart/QuestionLiqu
 import CollectionCharts from '../charts/CollectionCharts';
 import Links from '../navComponent';
 import DynamicConfigService from '../../services/DynamicConfigService';
+import DevTools, { setLogEnabled } from 'mobx-react-devtools';
+import { Link } from 'react-router-dom';
 
 import CandidateIntro from '../CandidateIntro';
 import CandidateNew from '../CandidateNew';
+import QuestionAnswer from '../QuestionAnswer';
 
 import smallLogo from './represent_white_outline.svg';
 
@@ -101,10 +105,31 @@ function getDynamicConfig(url) {
 }
 
 
-@inject("UserStore") @observer export default class Shell extends Component {
+const ProtectedRoute = ({ component: Component, isAuthenticated: isAuthenticated, ...rest }) => (
+  <Route {...rest} render={(props) => (
+    isAuthenticated()
+      ? <Component {...props} />
+      : <Redirect to={{
+          pathname: '/login',
+          state: { from: props.location }
+      }} />
+  )} />
+);
+
+@inject("UserStore")
+@observer
+export default class Shell extends Component {
+  constructor(props) {
+    super(props);
+    this.isAuthenticated = this.isAuthenticated.bind(this);
+  }
+
+  isAuthenticated() {
+    const { UserStore } = this.props;
+    return UserStore && UserStore.isLoggedIn();
+  }
 
   render() {
-
     let raw_config = getDynamicConfig(this.props.history.location.pathname);
     this.dynamicConfig = DynamicConfigService;
     if(raw_config) {
@@ -132,6 +157,7 @@ function getDynamicConfig(url) {
       <Router history={this.props.history}>
           <MuiThemeProvider muiTheme={muiTheme}>
             <div style={{height: '100%', position: 'absolute', width: '100%', top: 0, left: 0, overflow: 'hidden'}}>
+              <Link to="/Logout">Logout</Link>
               <div style={mainContentStyle}>
                 <Scrollbars autoHide>
                   <ReactCSSTransitionGroup
@@ -144,6 +170,7 @@ function getDynamicConfig(url) {
                     <Route exact path="/login/:dynamicConfig?" component={Login}/>
                     <Route exact path="/authcode/:code/:email/:redirect" component={AuthCode}/>
                     <Route exact path="/login/:dynamicConfig/:email" component={Login}/>
+                    <Route exact path="/logout/" component={Logout}/>
                     <Route exact path="/register" component={Register}/>
                     <Route exact path="/register/:redirect" component={Register}/>
                     <Route exact path="/join/:dynamicConfig?" component={Join}/>
@@ -153,6 +180,12 @@ function getDynamicConfig(url) {
                     <Route exact path="/survey/:collectionId/:dynamicConfig?" component={CollectionIntro}/>
                     <Route exact path="/survey/:collectionId/edit" component={EditCollection}/>
                     <Route exact path="/survey/:collectionId/flow/:orderNumber/:dynamicConfig?" component={QuestionFlow}/>
+                    <ProtectedRoute
+                      exact
+                      path="/survey/:collectionId/flow/:orderNumber/answer/:choiceId/:dynamicConfig?"
+                      component={QuestionAnswer}
+                      isAuthenticated={this.isAuthenticated}
+                    />
                     <Route exact path="/survey/:collectionId/end/:dynamicConfig?" component={CollectionEnd}/>
                     <Route exact path="/test" component={Test}/>
                     <Route exact path="/undividedrender/:questionId" component={UndividedRender}/>
@@ -226,6 +259,7 @@ function getDynamicConfig(url) {
                   <TextField value={this.props.UserStore.userData.get("first_name")} fullWidth={true} id="firstname"/>
                   <TextField value={this.props.UserStore.userData.get("last_name")} fullWidth={true} id="lastname"/>
                 </Dialog>
+                <DevTools />
               </div>
           </MuiThemeProvider>
       </Router>

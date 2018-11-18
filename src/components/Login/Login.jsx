@@ -8,13 +8,16 @@ import { grey100 } from 'material-ui/styles/colors';
 import Dialog from 'material-ui/Dialog';
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton';
+import { Redirect } from 'react-router-dom';
 
 import DynamicConfigService from '../../services/DynamicConfigService';
 
 import './Login.css';
 import smallLogo from './represent_white_outline.svg';
 
-@inject("UserStore") @observer export default class Login extends Component {
+@inject("UserStore", "routing")
+@observer
+export default class Login extends Component {
 
   constructor() {
     super();
@@ -39,17 +42,13 @@ import smallLogo from './represent_white_outline.svg';
     }
   }
 
-  componentWillUpdate() {
-    if(this.props.UserStore.userData.has("id")) { // If user is logged in, redirect
-      if(this.props.match.params.redirect) {
-        this.props.history.push(this.dynamicConfig.getNextRedirect());
-      }else {
-        this.props.history.push("/");
-      }
-    }
-  }
-
   render() {
+    const { UserStore, routing } = this.props;
+    const { history, push, goBack, location } = routing;
+
+    if (UserStore.isLoggedIn()) {
+      return <Redirect to={location.state && location.state.from ? location.state.from : "/"} />;
+    }
 
     return (
       <div style={{height: '100%'}}>
@@ -57,10 +56,21 @@ import smallLogo from './represent_white_outline.svg';
           <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center', padding: '10px 20px' }}>
             <Paper zDepth={1} style={{padding: '10px 20px', maxWidth: '320px', marginLeft: 'auto', marginRight: 'auto'}}>
               <p style={{fontWeight: 'bold', margin: '10px 0'}}><img src={smallLogo} style={{height: '30px', verticalAlign: 'middle', marginRight: '10px', marginTop: '-4px'}} />Please login to continue</p>
-              <TextField hintText="Username / email" style={{width: '100%'}} value={this.state.email} onChange={(e, newValue) => this.setState({email: newValue})}/><br />
-              <TextField hintText="Password" type="password" style={{width: '100%'}} value={this.state.password} onChange={(e, newValue) => this.setState({password: newValue})}/><br />
-              <FlatButton label="login" style={{width: '100%', marginBottom: '5px'}} backgroundColor={grey100} secondary onClick={this.attemptLogin} />
-
+              <form onSubmit={(e) => {
+                  e.preventDefault();
+                  this.attemptLogin();
+                }}
+              >
+                <TextField hintText="Username / email" style={{width: '100%'}} value={this.state.email} onChange={(e, newValue) => this.setState({email: newValue})}/><br />
+                <TextField hintText="Password" type="password" style={{width: '100%'}} value={this.state.password} onChange={(e, newValue) => this.setState({password: newValue})}/><br />
+                <FlatButton
+                  type="submit"
+                  label="login"
+                  style={{width: '100%', marginBottom: '5px'}}
+                  backgroundColor={grey100} secondary
+                  onClick={this.attemptLogin}
+                />
+              </form>
               <FacebookLogin
                 cssClass="custom-facebook-login-button"
                 appId={String(window.authSettings.facebookId)}
@@ -74,11 +84,22 @@ import smallLogo from './represent_white_outline.svg';
                 textButton="Connect with Facebook"
                 disableMobileRedirect={true}
                 />
-              <p style={{textAlign: 'center', fontSize: '12px'}}>By using the service, you agree to the <a href="https://represent.me/legal/terms/">terms and conditions</a> and <a href="https://represent.me/legal/privacy-policy/">privacy policy</a><br/><br/><a onClick={() => this.props.history.push("/join/" + this.dynamicConfig.encodeConfig())} className="FakeLink">{"Don't have an account?"}</a><br/><a onClick={() => {window.location.href = 'https://app.represent.me/access/forgot-password/'}} className="FakeLink">{"Forgotten your password?"}</a></p>
+              <p style={{textAlign: 'center', fontSize: '12px'}}>
+                By using the service, you agree to the
+                <a href="https://represent.me/legal/terms/">terms and conditions</a> and
+                <a href="https://represent.me/legal/privacy-policy/">privacy policy</a>
+                <br/>
+                <br/>
+                <a onClick={() => push("/join/")} className="FakeLink">{"Don't have an account?"}</a>
+                <br/>
+                <a onClick={() => push("https://app.represent.me/access/forgot-password/")} className="FakeLink">{"Forgotten your password?"}</a>
+              </p>
             </Paper>
-            {this.dynamicConfig.getNextRedirect() && <Paper onClick={() => this.props.history.push(this.dynamicConfig.getNextRedirect())} zDepth={1} style={{padding: '10px 20px', maxWidth: '320px', marginLeft: 'auto', marginRight: 'auto', marginTop: '10px'}}>
-              <a className="FakeLink">&larr; {"back"}</a>
-            </Paper>}
+            {history.length > 1 &&
+              <Paper onClick={goBack} zDepth={1} style={{padding: '10px 20px', maxWidth: '320px', marginLeft: 'auto', marginRight: 'auto', marginTop: '10px'}}>
+                <a className="FakeLink">&larr; {"back"}</a>
+              </Paper>
+            }
           </div>
         </div>
 
@@ -104,13 +125,16 @@ import smallLogo from './represent_white_outline.svg';
   }
 
   attemptLogin() {
-    this.props.UserStore.authLogin(this.state.email, this.state.password).catch(function(error) {
-      if(error.response.data.non_field_errors) {
-        this.setState({problems: ["Username / password combination not found! Please check your details and try again"]});
-      }else {
-        this.setState({problems: JSON.stringify(error.response.data).replace(/:/g,": ").replace(/[&\/\\#+()$~%.'"*?<>{}\[\]]/g, "").split(",")});
-      }
-    }.bind(this));
+    const { UserStore, routing } = this.props;
+
+    UserStore.authLogin(this.state.email, this.state.password)
+      .catch(((error) => {
+        if (error.response.data.non_field_errors) {
+          this.setState({ problems: ["Username / password combination not found! Please check your details and try again"] });
+        } else if (error) {
+          this.setState({ problems: JSON.stringify(error.response.data).replace(/:/g, ": ").replace(/[&\/\\#+()$~%.'"*?<>{}\[\]]/g, "").split(",") });
+        }
+      }).bind(this));
   }
 
   facebookCallback(result) {
