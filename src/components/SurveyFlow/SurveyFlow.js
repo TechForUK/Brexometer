@@ -8,7 +8,6 @@ import SkipToEnd from 'material-ui/svg-icons/av/fast-forward';
 import {Helmet} from "react-helmet";
 
 import QuestionFlow from '../QuestionFlow'
-import DynamicConfigService from '../../services/DynamicConfigService';
 import './SurveyFlow.css'
 
 @inject("CollectionStore", "QuestionStore", "UserStore") @observer class SurveyFlow extends Component {
@@ -22,14 +21,13 @@ import './SurveyFlow.css'
       networkError: false,
       activeTab: 'vote'
     }
-    this.dynamicConfig = DynamicConfigService;
 
     this.onVote = this.onVote.bind(this)
     this.navigateNext = this.navigateNext.bind(this)
     this.navigatePrevious = this.navigatePrevious.bind(this)
     this.navigateN = this.navigateN.bind(this)
     this.navigateTab = this.navigateTab.bind(this)
-    this.navigateEnd = this.navigateEnd.bind(this)
+    this.navigateEnd2 = this.navigateEnd2.bind(this)
   }
 
   componentWillMount() {
@@ -105,8 +103,9 @@ import './SurveyFlow.css'
   }
 
   onVote(i, votingMode) {
+    const { history } = this.props;
     if(!this.props.UserStore.userData.has("id")){
-      this.props.history.push("/login/" + this.dynamicConfig.getEncodedConfig());
+      this.props.history.push("/login/");
     } else {
       let question = this.props.QuestionStore.questions.get(this.state.collectionItems[this.props.match.params.itemNumber].object_id)
       const userLocation = this.props.UserStore.generalAnalyticsData.get('analytics_location')
@@ -132,41 +131,44 @@ import './SurveyFlow.css'
   }
 
   navigateNext() {
-    if (parseInt(this.props.match.params.itemNumber, 10) + 1 === this.state.collectionItems.length) {
-      // this.navigateEnd()
-      this.navigateEnd2()
-    } else {
-      this.loadNextQuestionsPage(parseInt(this.props.match.params.itemNumber, 10));
-      this.props.history.push('/survey/' + this.props.match.params.surveyId + '/flow/' + (parseInt(this.props.match.params.itemNumber, 10) + 1) + '/vote/' + this.dynamicConfig.getEncodedConfig())
-    }
+    const { match } = this.props;
+    const { itemNumber } = match.params;
+    this.navigateN(parseInt(itemNumber) + 1);
   }
 
   navigatePrevious() {
-    this.props.history.push('/survey/' + this.props.match.params.surveyId + '/flow/' + (parseInt(this.props.match.params.itemNumber, 10) - 1) + '/vote/' + this.dynamicConfig.getEncodedConfig())
+    const { match } = this.props;
+    const { itemNumber } = match.params;
+    this.navigateN(parseInt(itemNumber) - 1);
   }
 
-  navigateN(n) {
-    if ((n) === this.state.collectionItems.length) {
-      // this.navigateEnd()
+  navigateN(itemNumber) {
+    const { history, match } = this.props;
+    const { surveyId } = match.params;
+
+    console.log(itemNumber);
+
+    if (itemNumber >= this.state.collectionItems.length) {
       this.navigateEnd2()
     } else {
-      this.loadNextQuestionsPage(n);
-      const nextUrl = `/survey/${this.props.match.params.surveyId}/flow/${n}/vote/`;
-      this.dynamicConfig.addRedirect(nextUrl);
-      this.props.history.push(nextUrl+this.dynamicConfig.getEncodedConfig());
+      this.loadNextQuestionsPage(itemNumber);
+      history.push(`/survey/${surveyId}/flow/${itemNumber}/vote/`);
     }
   }
 
   navigateTab(tab) {
-    this.props.history.push('/survey/' + this.props.match.params.surveyId + '/flow/' + this.props.match.params.itemNumber + '/' + tab + '/' + this.dynamicConfig.getEncodedConfig())
+    const { history, match } = this.props;
+    const { surveyId, itemNumber } = match.params;
+
+    history.push(`/survey/${surveyId}/flow/${itemNumber}/${tab}`);
   }
 
-  navigateEnd() {
-    this.props.history.push('/survey/' + this.props.match.params.surveyId + '/end/' + this.dynamicConfig.getEncodedConfig())
-  }
-
+  // Why oh why - @jimbofreedman
   navigateEnd2() {
-    this.props.history.push('/survey/' + this.props.match.params.surveyId + '/end2/' + this.dynamicConfig.getEncodedConfig())
+    const { history, match } = this.props;
+    const { surveyId } = match.params;
+
+    history.push(`/survey/${surveyId}/end2/`);
   }
 
   render() {

@@ -7,7 +7,6 @@ import { arrayMove } from 'react-sortable-hoc';
 import LinearProgress from 'material-ui/LinearProgress';
 
 @inject("QuestionStore", "CollectionStore", "UserStore") @observer class EditCollection extends Component {
-
   constructor(props) {
     super(props);
 
@@ -36,18 +35,19 @@ import LinearProgress from 'material-ui/LinearProgress';
   }
 
   componentWillMount() {
-    const { CollectionStore } = this.props;
-    CollectionStore.getCollectionById(this.collectionId).then((collection) => {
-      this.props.UserStore.getCachedMe().then((user) => {
+    const { CollectionStore, UserStore, history, match } = this.props;
+    const collectionId = parseInt(match.params.collectionId, 10);
+    CollectionStore.getCollectionById(collectionId).then((collection) => {
+      UserStore.getCachedMe().then((user) => {
         //console.log('collection: ', collection, collection.user.id, user);
         if(collection.user.id !== user.id) { // if not an owner
-          return this.props.history.push("/survey/" + this.collectionId);
+          return history.push(`/survey/${collectionId}/`);
         }
         this.fillDetailsFromStore();
       })
     })
     CollectionStore.getCollectionItemsById(this.collectionId).then((items) => {
-      const questions = CollectionStore.collectionItems.get(this.collectionId);
+      const questions = CollectionStore.collectionItems.get(collectionId);
       this.setState({ questions, hasCollectionQuestions: true });
     });
   }
@@ -109,7 +109,7 @@ import LinearProgress from 'material-ui/LinearProgress';
           }}
           />
           <div style={{margin: '40px 10px'}}>
-            <FlatButton label="Cancel" style={{float: 'right'}} onClick={() => this.props.push("/")} />
+            <FlatButton label="Cancel" style={{float: 'right'}} onClick={() => this.props.history.push("/")} />
             <RaisedButton label="Save" primary={true} style={{float: 'left'}} onClick={() => this.saveCollection()}
             />
             </div>

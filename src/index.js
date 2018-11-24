@@ -1,9 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { RouterStore, syncHistoryWithStore } from 'mobx-react-router';
+import createBrowserHistory from 'history/createBrowserHistory';
 import Shell from './components/Shell';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import { Provider } from 'mobx-react';
+import { Router } from 'react-router';
+
 import axios from 'axios';
 // import DevTools, { setLogEnabled } from 'mobx-react-devtools';
 import createHistory from 'history/createBrowserHistory'
@@ -59,7 +62,7 @@ window.stores = {
   QuestionCommentsStore:     new QuestionCommentsStore(),
   UrlPreviewStore:     new UrlPreviewStore(),
   GroupStore:     new GroupStore(),
-  RoutingStore: new RouterStore()
+  routing: new RouterStore(),
 }
 
 window.fbAsyncInit = () => {
@@ -90,7 +93,7 @@ window.REPRESENT = (element, initialPath = "/", virtualLocation = true) => {
       }
     );
   }
-  history = syncHistoryWithStore(history, window.stores.RoutingStore);
+  history = syncHistoryWithStore(history, window.stores.routing);
 
   ReactDOM.render(
     <div>
@@ -104,7 +107,7 @@ window.REPRESENT = (element, initialPath = "/", virtualLocation = true) => {
         QuestionCommentsStore={window.stores.QuestionCommentsStore}
         UrlPreviewStore={window.stores.UrlPreviewStore}
         GroupStore={window.stores.GroupStore}
-        RoutingStore={window.stores.RoutingStore}
+        routing="routing"
         >
         <Shell history={history}/>
       </Provider>

@@ -6,7 +6,6 @@ import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
 
 import IntroCarousel from '../IntroCarousel';
-import DynamicConfigService from '../../services/DynamicConfigService';
 //import GeoService from '../../services/GeoService';
 
 import './RegisterNewUser.css';
@@ -51,14 +50,6 @@ import Page2 from './RegisterNewPage2';
       dobProblem: 'Please enter a valid date of birth',
       nameProblem: 'Please provide first and last name',
       genderProblem: "Please select your gender, or choose 'I would rather not say'"
-    }
-    this.dynamicConfig = DynamicConfigService;
-  }
-
-  componentWillMount() {
-    const raw_config = this.dynamicConfig.getDynamicConfig(this.props.history.location.pathname);
-    if(raw_config) {
-      this.dynamicConfig.setConfigFromRaw(raw_config)
     }
   }
 
@@ -116,7 +107,7 @@ import Page2 from './RegisterNewPage2';
   facebookCallback = (result) => {
     if(result.accessToken) {
       this.props.UserStore.facebookLogin(result.accessToken);
-      this.props.history.push(this.dynamicConfig.getNextRedirect())
+      this.props.history.push()
     }
   }
   displayProblem = () => {
@@ -153,8 +144,11 @@ import Page2 from './RegisterNewPage2';
   }
   redirectToLogin = () => {
     const email = this.state.email;
-    if (email) this.props.history.push("/loginuser/" + this.dynamicConfig.encodeConfig(this.dynamicConfig.getNextRedirect()) + "/" + encodeURIComponent(email))
-    else this.props.history.push("/loginuser/" + this.dynamicConfig.encodeConfig(this.dynamicConfig.getNextRedirect()))
+    if (email) {
+      this.props.history.push(`/loginuser/${email}`)
+    } else {
+      this.props.history.push("/loginuser/")
+    }
   }
   makeAnonimous = () => {
     const anonymous = !this.state.anonymous;

@@ -18,7 +18,6 @@ import KeyboardArrowRight from 'material-ui/svg-icons/hardware/keyboard-arrow-ri
 //import QuestionPopulationStackedChart from '../charts/QuestionPopulationStackedChart';
 import QuestionLiquidPiechart from '../charts/QuestionLiquidPiechart';
 import CompareCollectionUsers from '../CompareCollectionUsers';
-import DynamicConfigService from '../../services/DynamicConfigService';
 import { ResponsiveCollectionContainer } from '../charts/CollectionCharts/CollectionDisplay';
 
 import './CollectionEnd.css';
@@ -56,14 +55,10 @@ const questionShareLink = (questionId) => {
       this.props.CollectionStore.getCollectionItemsById(collectionId);
     }
 
-    this.dynamicConfig = DynamicConfigService;
-    if(this.props.match.params.dynamicConfig) {
-      this.dynamicConfig.setConfigFromRaw(this.props.match.params.dynamicConfig)
-    }
-
-    this.setState({
-      showMessengerDialog: this.dynamicConfig.config.survey_end.messenger_prompt
-    })
+    // todo replace @jimbofreedman
+    // this.setState({
+    //   showMessengerDialog: this.dynamicConfig.config.survey_end.messenger_prompt
+    // })
   }
 
   render() {
@@ -137,7 +132,8 @@ const questionShareLink = (questionId) => {
 
             <CollectionEndShare collection={collection} />
 
-            <CollectionEndUserCompare userIds={this.dynamicConfig.config.survey_end.compare_users} />
+            {/*// TODO compareusers - @jimbofreedman*/}
+            {/*<CollectionEndUserCompare userIds={this.dynamicConfig.config.survey_end.compare_users} />*/}
 
             <Dialog
                 title="Want awesome powers?"

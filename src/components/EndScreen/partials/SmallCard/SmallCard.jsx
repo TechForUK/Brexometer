@@ -21,13 +21,14 @@ const iconStyles = {
 
 
 
-@inject("RoutingStore")
 @observer
 class SmallCard extends Component {
   redirect = (e, tab) => {
+    const { history, url } = this.props;
     e.preventDefault();
-    this.props.RoutingStore.history.push(`${this.props.url}${tab}`)
-  }
+    history.push(`${url}${tab}`)
+  };
+
 	render(){
     let values = [this.props.data];
     // console.log('render', values);

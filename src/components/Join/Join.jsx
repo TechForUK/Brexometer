@@ -13,8 +13,6 @@ import MenuItem from 'material-ui/MenuItem';
 
 import DateOfBirth from "../DateOfBirth";
 import GeoService from '../../services/GeoService';
-import DynamicConfigService from '../../services/DynamicConfigService';
-
 
 const styles = {
   floatingLabelText: {
@@ -43,13 +41,10 @@ const styles = {
   }
 
   componentWillMount() {
-    this.dynamicConfig = DynamicConfigService;
-    if(this.props.match.params.dynamicConfig) {
-      this.dynamicConfig.setConfigFromRaw(this.props.match.params.dynamicConfig)
-    }
   }
 
   render() {
+    const { history } = this.props;
 
     return (
       <div style={{height: '100%'}}>
@@ -57,7 +52,8 @@ const styles = {
 
           <h1 style={{marginBottom: 0}}>Join Represent</h1>
 
-          {this.dynamicConfig.getNextRedirect() && <a onClick={() => this.props.history.push(this.dynamicConfig.getNextRedirect())}>&larr; {"back"}</a>}
+          {/*@jimbofreedman todo check if can go back here */}
+          <a onClick={() => history.goBack()}>back</a>
 
           <TextField
             floatingLabelText="Email address"
@@ -112,13 +108,13 @@ const styles = {
         <Dialog open={this.state.emailExists}>
           <p style={{fontWeight: 'bold'}}>{"It looks like you're already signed up to Represent, please login to continue."}</p>
           <FlatButton label="Login" style={{width: '100%'}} backgroundColor={grey100} secondary onClick={() => {
-            this.props.history.push("/login/" + this.dynamicConfig.encodeConfig() + "/" + encodeURIComponent(this.state.txtEmail))
+            history.push(`/login/${encodeURIComponent(this.state.txtEmail)}`);
           }} />
         </Dialog>
 
         <Dialog open={this.props.UserStore.userData.has("id")}>
           <p style={{fontWeight: 'bold'}}>{"Sign up was successful, welcome to Represent!"}</p>
-          <FlatButton label="Continue" style={{width: '100%'}} backgroundColor={grey100} secondary onClick={() => this.props.history.push(this.dynamicConfig.getNextRedirect())} />
+          <FlatButton label="Continue" style={{width: '100%'}} backgroundColor={grey100} secondary onClick={() => this.props.history.push(location.state && location.state.from ? location.state.from : "/")} />
         </Dialog>
 
       </div>
@@ -148,6 +144,7 @@ const styles = {
   }
 
   attemptJoin() {
+    const { history, location } = this.props;
 
     let problems = [];
 
@@ -197,7 +194,7 @@ const styles = {
           }).then(function(response) {
             this.props.UserStore.setupAuthToken(response.data.auth_token)
               .then(() => {
-                this.props.history.push(this.dynamicConfig.getNextRedirect())
+                history.push(location.state && location.state.from ? location.state.from : "/")
               })
               .catch((error) => {
                 console.log(error)

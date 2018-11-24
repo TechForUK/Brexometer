@@ -10,8 +10,6 @@ import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
 import FacebookBox from 'material-ui-community-icons/icons/facebook-box';
 
-import DynamicConfigService from '../../services/DynamicConfigService';
-
 import './Login.css';
 
 const styles = {
@@ -54,21 +52,12 @@ const styles = {
     if(this.props.match.params.email) {
       this.setState({email: decodeURIComponent(this.props.match.params.email)});
     }
-
-    this.dynamicConfig = DynamicConfigService;
-    if(this.props.match.params.dynamicConfig) {
-      // this.dynamicConfig.setConfigFromRaw(this.props.match.params.dynamicConfig)
-    }
   }
   componentWillUpdate() {
-    if(this.props.UserStore.userData.has("id")) { // If user is logged in, redirect
+    const { history, location, UserStore } = this.props;
+    if(UserStore.userData.has("id")) { // If user is logged in, redirect
       //ToDo undestand what and how dynamicConfig??
-      //temporary fix -> redirect to main
-      if(this.props.match.params.dynamicConfig) {
-        this.props.history.push(this.dynamicConfig.getNextRedirect());
-       }else {
-        this.props.history.push("/");
-      }
+      history.push(location.state && location.state.from ? location.state.from : "/");
     }
   }
   handleInput = (stateProp, value) => {
@@ -83,25 +72,28 @@ const styles = {
     }
   }
   facebookCallback = (result) => {
+    const { history, location, UserStore } = this.props;
     if(result.accessToken) {
-      this.props.UserStore.facebookLogin(result.accessToken);
-      this.props.history.push(this.dynamicConfig.getNextRedirect())
+      UserStore.facebookLogin(result.accessToken);
+      history.push(location.state && location.state.from ? location.state.from : '/')
     }
   }
   attemptLogin = () => {
-    this.props.UserStore.authLogin(this.state.email, this.state.password)
-    .then(res =>
-      this.props.history.push(this.dynamicConfig.getNextRedirect()))
+    const { history, location, UserStore } = this.props;
+
+    UserStore.authLogin(this.state.email, this.state.password)
+      .then(res => history.push(location.state && location.state.from ? location.state.from : "/"))
       .catch((error) => {
-        if (!error.response) {
-          console.log(error);
-        } else if (error.response.data.non_field_errors) {
-          this.setState({problems: ["Username / password combination not found! Please check your details and try again"]});
-        } else {
-          this.setState({problems: JSON.stringify(error.response.data).replace(/:/g,": ").replace(/[&\/\\#+()$~%.'"*?<>{}\[\]]/g, "").split(",")});
-        }
+      if (!error.response) {
+        console.log(error);
+      } else if (error.response.data.non_field_errors) {
+        this.setState({problems: ["Username / password combination not found! Please check your details and try again"]});
+      } else {
+        this.setState({problems: JSON.stringify(error.response.data).replace(/:/g,": ").replace(/[&\/\\#+()$~%.'"*?<>{}\[\]]/g, "").split(",")});
+      }
     })
   }
+
   render() {
   return (
     <div className="accountmgmt">

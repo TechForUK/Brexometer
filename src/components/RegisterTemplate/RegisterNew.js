@@ -9,7 +9,6 @@ import {Step, Stepper } from 'material-ui/Stepper';
 import RaisedButton from 'material-ui/RaisedButton';
 import FlatButton from 'material-ui/FlatButton';
 
-import DynamicConfigService from '../../services/DynamicConfigService';
 import GeoService from '../../services/GeoService';
 
 import './RegisterNew.css';
@@ -91,13 +90,6 @@ const styles = {
       dobProblem: 'Please enter a valid date of birth',
       nameProblem: 'Please provide first and last name',
       genderProblem: "Please select your gender, or choose 'I would rather not say'"
-    }
-  }
-
-  componentWillMount() {
-    this.dynamicConfig = DynamicConfigService;
-    if(this.props.match.params.dynamicConfig) {
-      this.dynamicConfig.setConfigFromRaw(this.props.match.params.dynamicConfig)
     }
   }
 
@@ -243,6 +235,8 @@ const styles = {
     }
   }
   attemptNext2Page = () => {
+    const { location } = this.props;
+
     let problems = [];
     if(this.state.firstName === null || this.state.lastName === null) {
       problems.push(this.problemList.nameProblem);
@@ -287,7 +281,7 @@ const styles = {
           }).then((response) => {
             this.props.UserStore.setupAuthToken(response.data.auth_token)
               .then(() => {
-                this.props.history.push(this.dynamicConfig.getNextRedirect())
+                this.props.history.push(location.state && location.state.from ? location.state.from : '/')
               })
               .catch((error) => {
                 console.log(error)
@@ -389,7 +383,7 @@ const styles = {
                   style={{width: '100%'}}
                   backgroundColor={grey100}
                   secondary onTouchTap={() => {
-                    this.props.history.push("/login/" + this.dynamicConfig.encodeConfig() + "/" + encodeURIComponent(this.state.email))
+                    this.props.history.push(`/login/${encodeURIComponent(this.state.email)}`)
                   }}
                   />
                 </Dialog>}

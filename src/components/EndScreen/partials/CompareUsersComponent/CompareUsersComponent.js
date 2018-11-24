@@ -21,8 +21,6 @@ import TextField from 'material-ui/TextField';
 // import {grey400} from 'material-ui/styles/colors';
 // import Left from 'material-ui/svg-icons/navigation/arrow-back';
 
-import DynamicConfigService from '../../../../services/DynamicConfigService';
-
 import Results from '../ResultsComponent';
 //import CompareUsersDetailsComponent from '../CompareUsersDetailsComponent';
 import CompareUsersDetails from '../CompareUsersDetails';
@@ -60,7 +58,6 @@ class CompareCollectionUsers extends Component {
   constructor(props) {
     super(props);
 
-    this.dynamicConfig = DynamicConfigService;
     this.viewData = observable.shallowObject({
       pageReadiness: {
         isCompareUsersReady: observable(false),
@@ -171,6 +168,7 @@ class CompareCollectionUsers extends Component {
   loadUsersCompareData = () => {
     //let { CollectionStore, UserStore, collectionId = 1, userIds } = this.props;
     let { UserStore, userIds } = this.props;
+    console.log(this.props);
     //console.log('loadUsersCompareData: ', UserStore.userData.get("id"));
     let currentUserId = UserStore.isLoggedIn() && UserStore.userData.get("id");
     if (!currentUserId) return;
@@ -205,7 +203,9 @@ class CompareCollectionUsers extends Component {
       //candidates shown by default
       this.viewData.areLocalCandidatesShowing.set(true);
       //let candidatesIds = [17351, 17663, 17667, 17687, 17689, 17710, 17711, 17692];
-      let candidatesIds = this.dynamicConfig.config.survey_end.candidatesIds;
+      //let candidatesIds = this.dynamicConfig.config.survey_end.candidatesIds;
+      // TODo candidateids - @jimbofreedman
+      let candidatesIds = [];
       UserStore.getUsersById(candidatesIds).then((usersData) => {
         usersData.results.ids.forEach((id) => {
           this.viewData.candidates.push(usersData.results[id])
@@ -227,17 +227,18 @@ class CompareCollectionUsers extends Component {
       })
     }
 
-    UserStore.getCachedMe().then(user => {
-      if (this.dynamicConfig.config.survey_end.should_show_compare_candidates && user.district) {
-        UserStore.getCandidatesByLocation(user.district).then(candidates => {
-          console.log(candidates, user.district)
-          this.viewData.candidates.replace(candidates); //this.viewData.candidates.peek()
-          setCandidatesStat()
-        })
-      } else {
-        setCandidatesStat()
-      }
-    })
+    // TODO user stats - @jimbofreedman
+    // UserStore.getCachedMe().then(user => {
+    //   if (this.dynamicConfig.config.survey_end.should_show_compare_candidates && user.district) {
+    //     UserStore.getCandidatesByLocation(user.district).then(candidates => {
+    //       console.log(candidates, user.district)
+    //       this.viewData.candidates.replace(candidates); //this.viewData.candidates.peek()
+    //       setCandidatesStat()
+    //     })
+    //   } else {
+    //     setCandidatesStat()
+    //   }
+    // })
   }
 
   render() {

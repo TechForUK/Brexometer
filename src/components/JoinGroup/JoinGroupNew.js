@@ -5,7 +5,6 @@ import { cyan600, grey100 } from 'material-ui/styles/colors';
 import LinearProgress from 'material-ui/LinearProgress';
 import { observer, inject } from "mobx-react";
 import GeoService from '../../services/GeoService';
-import DynamicConfigService from '../../services/DynamicConfigService';
 import IntroCarousel from '../IntroCarousel';
 
 import JoinGroupPage1 from './JoinGroupPage1';
@@ -62,10 +61,6 @@ const roundUp = (x) => {
   }
 
   componentWillMount() {
-    this.dynamicConfig = DynamicConfigService;
-    if(this.props.match.params.dynamicConfig) {
-      this.dynamicConfig.setConfigFromRaw(this.props.match.params.dynamicConfig)
-    }
     let groupId = parseInt(this.props.match.params.groupId, 10);
     window.API.get("/api/groups/" + groupId + "/")
       .then((response) => {
@@ -163,8 +158,10 @@ const roundUp = (x) => {
   }
   redirectToLogin = () => {
     const email = this.state.email;
-    if (email) this.props.history.push("/loginuser/" + this.dynamicConfig.encodeConfig() + "/" + encodeURIComponent(email))
-    else this.props.history.push("/loginuser/" + this.dynamicConfig.encodeConfig())
+    if (email) {
+      this.props.history.push(`/loginuser/${email}`)
+    }
+    else this.props.history.push("/loginuser/")
   }
   toggleIntro = () => {
     //e.preventDefault()

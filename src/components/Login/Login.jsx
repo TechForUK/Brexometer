@@ -9,8 +9,6 @@ import Dialog from 'material-ui/Dialog';
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton';
 
-import DynamicConfigService from '../../services/DynamicConfigService';
-
 import './Login.css';
 import smallLogo from './represent_white_outline.svg';
 
@@ -32,11 +30,6 @@ import smallLogo from './represent_white_outline.svg';
     if(this.props.match.params.email) {
       this.setState({email: decodeURIComponent(this.props.match.params.email)});
     }
-
-    this.dynamicConfig = DynamicConfigService;
-    if(this.props.match.params.dynamicConfig) {
-      this.dynamicConfig.setConfigFromRaw(this.props.match.params.dynamicConfig)
-    }
   }
 
   componentWillUpdate() {
@@ -52,6 +45,7 @@ import smallLogo from './represent_white_outline.svg';
   }
 
   render() {
+    const { history } = this.props;
 
     return (
       <div style={{height: '100%'}}>
@@ -82,9 +76,9 @@ import smallLogo from './represent_white_outline.svg';
                 textButton="Connect with Facebook"
                 disableMobileRedirect={true}
                 />
-              <p style={{textAlign: 'center', fontSize: '12px'}}>By using the service, you agree to the <a href="https://represent.me/legal/terms/">terms and conditions</a> and <a href="https://represent.me/legal/privacy-policy/">privacy policy</a><br/><br/><a onClick={() => this.props.history.push("/join/" + this.dynamicConfig.encodeConfig())} className="FakeLink">{"Don't have an account?"}</a><br/><a onClick={() => {window.location.href = 'https://app.represent.me/access/forgot-password/'}} className="FakeLink">{"Forgotten your password?"}</a></p>
+              <p style={{textAlign: 'center', fontSize: '12px'}}>By using the service, you agree to the <a href="https://represent.me/legal/terms/">terms and conditions</a> and <a href="https://represent.me/legal/privacy-policy/">privacy policy</a><br/><br/><a onClick={() => this.props.history.push("/join/")} className="FakeLink">{"Don't have an account?"}</a><br/><a onClick={() => {window.location.href = 'https://app.represent.me/access/forgot-password/'}} className="FakeLink">{"Forgotten your password?"}</a></p>
             </Paper>
-            {this.dynamicConfig.getNextRedirect() && <Paper onClick={() => this.props.history.push(this.dynamicConfig.getNextRedirect())} zDepth={1} style={{padding: '10px 20px', maxWidth: '320px', marginLeft: 'auto', marginRight: 'auto', marginTop: '10px'}}>
+            {location.state && location.state.from && <Paper onClick={() => history.push(location.state.from : "/")} zDepth={1} style={{padding: '10px 20px', maxWidth: '320px', marginLeft: 'auto', marginRight: 'auto', marginTop: '10px'}}>
               <a className="FakeLink">&larr; {"back"}</a>
             </Paper>}
           </div>

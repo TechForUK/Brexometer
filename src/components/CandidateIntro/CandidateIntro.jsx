@@ -6,7 +6,9 @@ import Dialog from 'material-ui/Dialog';
 
 import logo from './represent_white_outline.svg';
 
-@inject("UserStore") @observer class CandidateIntro extends Component {
+@inject("UserStore", 'routing')
+@observer
+class CandidateIntro extends Component {
   constructor() {
     super();
     this.state = {
@@ -35,14 +37,17 @@ import logo from './represent_white_outline.svg';
           </div>
         </div>
 
-        <Dialog open={this.state.showEmailExistsDialog} contentStyle={{width: '300px'}}>
-          <div>
-            <p style={{fontWeight: 'bold'}}>{"It looks like you're already signed up to Represent, please login to continue."}</p>
-            <RaisedButton label="Login" style={{width: '100%'}} onClick={() => {
-              this.props.history.push("/login/" + encodeURIComponent(window.location.pathname.substring(1)) + "/" + encodeURIComponent(this.state.email))
-            }} />
-          </div>
-        </Dialog>
+        /*
+        I'm leaving this part commented out because it really shouldn't exist - maybe a validation warning instead? @jimbofreedman
+         */
+        {/*<Dialog open={this.state.showEmailExistsDialog} contentStyle={{width: '300px'}}>*/}
+          {/*<div>*/}
+            {/*<p style={{fontWeight: 'bold'}}>{"It looks like you're already signed up to Represent, please login to continue."}</p>*/}
+            {/*<RaisedButton label="Login" style={{width: '100%'}} onClick={() => {*/}
+              {/*this.props.history.push("/login/" + encodeURIComponent(window.location.pathname.substring(1)) + "/" + encodeURIComponent(this.state.email))*/}
+            {/*}} />*/}
+          {/*</div>*/}
+        {/*</Dialog>*/}
 
         <Dialog open={this.state.emailInvalid} contentStyle={{width: '300px'}}>
           <div>
@@ -56,20 +61,22 @@ import logo from './represent_white_outline.svg';
   }
 
   checkEmail() {
+    const { history, UserStore } = this.props;
+
     this.setState({checking: true})
 
-    if(!this.props.UserStore.checkEmailRegex(this.state.email)) {
+    if(!UserStore.checkEmailRegex(this.state.email)) {
       this.setState({emailInvalid: true, checking: false})
       return
     }
 
-    this.props.UserStore.checkEmail(this.state.email)
+    UserStore.checkEmail(this.state.email)
       .then((exists) => {
         if(exists) {
           this.setState({checking: false, showEmailExistsDialog: true})
         }else {
-          this.setState({checking: false})
-          this.props.history.push('/candidate/new/' + encodeURIComponent(this.state.email))
+          this.setState({checking: false});
+          history.push(`/candidate/new/${this.state.email}`);
         }
       })
   }

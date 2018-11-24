@@ -22,7 +22,7 @@ const {
 const FacebookIcon = generateShareIcon('facebook')
 const TwitterIcon = generateShareIcon('twitter')
 
-@inject("UserStore", "QuestionCommentsStore", "RoutingStore")
+@inject("UserStore", "QuestionCommentsStore")
 @observer
 class Comment extends Component {
 
@@ -38,8 +38,7 @@ class Comment extends Component {
     const routeElems = props.RoutingStore.location.pathname.split('/');
     this.route = {
       collectionId: routeElems[2],
-      questionIndex: routeElems[4],
-      dynamicConfig: routeElems[6]
+      questionIndex: routeElems[4]
     }
   }
 
@@ -73,7 +72,7 @@ class Comment extends Component {
   }
 
   changeMyAnswer = () => {
-    this.props.RoutingStore.push(`/survey/${this.route.collectionId}/flow/${this.route.questionIndex}/vote/${this.route.dynamicConfig}`)
+    this.props.history.push(`/survey/${this.route.collectionId}/flow/${this.route.questionIndex}/vote/`)
   }
 
   render() {

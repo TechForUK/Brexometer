@@ -63,6 +63,7 @@ const roundUp = (x) => {
   }
 
   render() {
+    const { routing } = this.props;
 
     if(!this.state.group) {
       return null;
@@ -118,12 +119,13 @@ const roundUp = (x) => {
 
         </Paper>
 
-        <Dialog open={this.state.emailExists}>
-          <p style={{fontWeight: 'bold'}}>{"It looks like you're already signed up to Represent, please login to join this group."}</p>
-          <FlatButton label="Login" style={{width: '100%'}} backgroundColor={grey100} secondary onClick={() => {
-            this.props.history.push("/login/" + encodeURIComponent(window.location.pathname.substring(1)) + "/" + encodeURIComponent(this.state.txtEmail))
-          }} />
-        </Dialog>
+        {/*As before - this shouldn't be here @jimbofreedman*/}
+        {/*<Dialog open={this.state.emailExists}>*/}
+          {/*<p style={{fontWeight: 'bold'}}>{"It looks like you're already signed up to Represent, please login to join this group."}</p>*/}
+          {/*<FlatButton label="Login" style={{width: '100%'}} backgroundColor={grey100} secondary onClick={() => {*/}
+            {/*this.props.history.push("/login/" + encodeURIComponent(window.location.pathname.substring(1)) + "/" + encodeURIComponent(this.state.txtEmail))*/}
+          {/*}} />*/}
+        {/*</Dialog>*/}
 
         <Dialog open={this.state.joinComplete}>
           <p style={{fontWeight: 'bold'}}>{"You're now a member of " + this.state.group.name}</p>

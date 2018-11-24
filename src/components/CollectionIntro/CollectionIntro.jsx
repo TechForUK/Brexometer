@@ -7,11 +7,11 @@ import {Helmet} from "react-helmet";
 import RaisedButton from 'material-ui/RaisedButton';
 
 import MoreText from '../Components/MoreText';
-import DynamicConfigService from '../../services/DynamicConfigService';
 import ErrorReload from '../ErrorReload';
 import './CollectionIntro.css';
 
-@inject("UserStore", "CollectionStore") @observer class CollectionIntro extends Component {
+@inject("UserStore", "CollectionStore")
+@observer class CollectionIntro extends Component {
 
   constructor(props) {
     super(props);
@@ -26,30 +26,31 @@ import './CollectionIntro.css';
     let { CollectionStore, match } = this.props
     CollectionStore.getCollectionById(parseInt(match.params.collectionId, 10))
       .then((collection) => {
-        this.setState({collection: collection});
+        this.setState({ collection: collection });
       })
     this.props.CollectionStore.getCollectionItemsById(parseInt(match.params.collectionId, 10))
-      .then((resolve) => { })
-      .catch((error) => { this.setState({ networkError: true }) })
-
-    this.dynamicConfig = DynamicConfigService;
-    if(this.props.match.params.dynamicConfig) {
-      this.dynamicConfig.setConfigFromRaw(this.props.match.params.dynamicConfig)
-    }
+      .then((resolve) => {
+      })
+      .catch((error) => {
+        this.setState({ networkError: true })
+      })
   }
 
-  startVoting = () => {
+  startVoting() {
+    const { history, UserStore, location } = this.props;
+
     const collectionId = parseInt(this.props.match.params.collectionId, 10);
     const url = `/survey/${collectionId}/flow/0/vote/`;
-    this.dynamicConfig.addRedirect(url);
-    const dynamicConfigStr = this.dynamicConfig.getEncodedConfig();
 
-    if(!this.props.UserStore.userData.has("id")){
-      this.props.history.push("/login/" + this.dynamicConfig.getEncodedConfig());
+    if(!UserStore.userData.has("id")){
+      history.push(
+        url,
+        { state: { from: location }},
+      )
     } else {
-      this.props.history.push(url+dynamicConfigStr)
+      history.push(url);
     }
-  }
+  };
 
   render() {
 
